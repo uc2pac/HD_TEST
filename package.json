@@ -5,7 +5,8 @@
   "main": "data-capture-phase-1.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "inspect": "node --inspect index.js"
   },
   "repository": {
     "type": "git",
