@@ -3,7 +3,7 @@ var bodyParser = require('body-parser');
 var lzString = require('./utils/lzString');
 var app = express();
 
-var port = 8080;
+var port = process.env.PORT || 3000;
 
 var tempStorage = [];
 
