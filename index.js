@@ -1,5 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var path = require('path');
+var appRoot = path.resolve(__dirname);
 var lzString = require('./utils/lzString');
 var app = express();
 
@@ -12,8 +14,8 @@ var SOCKET_CONSTANTS = {
 
 app.use(express.static('public'));
 
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.text());
+app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
+app.use(bodyParser.text({limit: '50mb'}));
 
 function pushToStorage(data, whereFrom) {
   console.log('Comes from ' + whereFrom + ':');
@@ -32,21 +34,29 @@ function getWhereFrom(req) {
 }
 
 // serve static pages
-app.post('/analytics', function(req, res){
-  const decoded = decodeURIComponent(req.body);
-  const decompressed = lzString.decompressFromBase64(decoded);
-  pushToStorage(decompressed, getWhereFrom(req));
+app.post('/analytics', function(req, res) {
+  var decoded = decodeURIComponent(req.body);
+  var decompressed = lzString.decompressFromBase64(decoded);
+
+  pushToStorage(decompressed);
+
   res.status(200).send(decompressed);
 });
 
-app.get('/analytics/:name', function(req, res){
-  const decoded = decodeURIComponent(req.query.x);
-  const decompressed = lzString.decompressFromBase64(decoded);
-  pushToStorage(decompressed, getWhereFrom(req));
-  res.status(204).send({});
+app.get('/worker/:name', (req, res) => {
+  res.sendFile(`${appRoot}/worker/${req.params.name}`);
 });
 
-const server = app.listen(port, function() {
+app.get('/analytics/:name', function(req, res) {
+  var decoded = decodeURIComponent(req.query.x);
+  var decompressed = lzString.decompressFromBase64(decoded);
+
+  pushToStorage(decompressed);
+  
+  res.status(204).send();
+});
+
+var server = app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
 
