@@ -3,9 +3,12 @@ var bodyParser = require('body-parser');
 var lzString = require('./utils/lzString');
 var app = express();
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 
 var tempStorage = [];
+var SOCKET_CONSTANTS = {
+  SEND_DATA: 'send_socket_data'
+};
 
 app.use(express.static('public'));
 
@@ -51,7 +54,7 @@ const io = require('socket.io')(server);
 
 io.on('connection', function (socket) {
 
-  socket.on('buffer data', function (data) {
+  socket.on(SOCKET_CONSTANTS.SEND_DATA, function (data) {
     const decoded = decodeURIComponent(data);
     const decompressed = lzString.decompressFromBase64(decoded);
     pushToStorage(decompressed, 'Socket');
