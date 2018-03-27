@@ -1,7 +1,7 @@
 var BeaconChannel = function() {
   var serverUrl = '';
 
-  var BeaconChannel = {
+  return {
     init: function (url) {
       serverUrl = url;
     },
@@ -14,13 +14,4 @@ var BeaconChannel = function() {
       navigator.sendBeacon(serverUrl, data);
     }
   };
-  return BeaconChannel;
 }();
-
-if (typeof define === "function" && define.amd) {
-  define(function() {
-    return BeaconChannel;
-  });
-} else if (typeof module !== "undefined" && module != null) {
-  module.exports = BeaconChannel;
-}

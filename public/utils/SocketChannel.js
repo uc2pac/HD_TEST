@@ -5,7 +5,7 @@ var SocketChannel = function() {
     SEND_DATA: 'send_socket_data'
   };
 
-  var SocketChannel = {
+  return {
     init : function (serverUrl) {
       socket = io(serverUrl);
     },
@@ -13,13 +13,4 @@ var SocketChannel = function() {
       socket.emit(SOCKET_CONSTANTS.SEND_DATA, data);
     }
   };
-  return SocketChannel;
 }();
-
-if (typeof define === "function" && define.amd) {
-  define(function() {
-    return SocketChannel;
-  });
-} else if (typeof module !== "undefined" && module != null) {
-  module.exports = SocketChannel;
-}

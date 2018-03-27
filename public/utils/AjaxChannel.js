@@ -1,14 +1,14 @@
 var AjaxChannel = function () {
   var serverUrl;
 
-  var AjaxChannel = {
+  return {
     init: function (url) {
       serverUrl = url;
     },
 
-    send: function (data, async) {
+    send: function (data) {
       var xmlHttp = new XMLRequest();
-      xmlHttp.open("POST", serverUrl, async);
+      xmlHttp.open("POST", serverUrl);
       xmlHttp.setRequestHeader();
       xmlHttp.send(data);
       xmlHttp.onreadystatechange(function ajxReadyStateChanged() {
@@ -19,13 +19,4 @@ var AjaxChannel = function () {
       return xmlHttp;
     }
   };
-  return AjaxChannel;
 }();
-
-if (typeof define === "function" && define.amd) {
-  define(function () {
-    return AjaxChannel;
-  });
-} else if (typeof module !== "undefined" && module != null) {
-  module.exports = AjaxChannel;
-}

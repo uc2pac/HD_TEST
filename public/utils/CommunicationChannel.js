@@ -18,7 +18,6 @@ var CommunicationChannel = function() {
       method = config.method;
       dataCapture = config.dataCapture;
 
-
       BeaconChannel.init(serverUrl + dataCapture);
       SocketChannel.init(serverUrl);
       PixelChannel.init(serverUrl + dataCapture);
@@ -50,15 +49,19 @@ var CommunicationChannel = function() {
 
       switch (sendMethod) {
         case METHODS.AJAX:
+          console.log('ajax sent');
           AjaxChannel.send(data, async);
           break;
         case METHODS.SOCKET:
+          console.log('socket sent');
           SocketChannel.send(data);
           break;
         case METHODS.PIXEL:
+          console.log('pixel sent');
           PixelChannel.send(data);
           break;
         case METHODS.BEACON:
+          console.log('beacon sent');
           BeaconChannel.send(data);
           break;
       }

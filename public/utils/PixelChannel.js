@@ -5,7 +5,7 @@ var PixelChannel = function() {
   },
     serverUrl;
 
-  var PixelChannel = {
+  return {
     init: function (url) {
       serverUrl = url;
     },
@@ -23,13 +23,4 @@ var PixelChannel = function() {
         pixelRequest.src = this.createPixelUrl(data);
     }
   };
-  return PixelChannel;
 }();
-
-if (typeof define === "function" && define.amd) {
-  define(function() {
-    return PixelChannel;
-  });
-} else if (typeof module !== "undefined" && module != null) {
-  module.exports = PixelChannel;
-}
