@@ -1,3 +1,7 @@
+!!self.importScripts && self.importScripts(
+  '/js/socket.io.js'
+);
+
 var SocketChannel = function() {
   var socket = null;
 
@@ -10,6 +14,7 @@ var SocketChannel = function() {
       socket = io(serverUrl);
     },
     send: function (data) {
+      console.log('Send from socket');
       socket.emit(SOCKET_CONSTANTS.SEND_DATA, data);
     }
   };

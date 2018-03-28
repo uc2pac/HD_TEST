@@ -4,12 +4,15 @@ IndexedDB = {
 
     var dbInstance = indexedDB.open(this.config.indexedDBName, 1);
 
-    // Create the schema
-    dbInstance.onupgradeneeded = function onupgradeneeded() {
+    var onupgradeneeded = function onupgradeneeded() {
       var db = dbInstance.result;
       var store = db.createObjectStore(this.config.indexedDBStoreName, { keyPath: 'timeStamp'});
     };
 
+     // Create the schema
+    dbInstance.onupgradeneeded = onupgradeneeded.bind(this);
+
+    
     dbInstance.onsuccess = function onsuccess() {
       IndexedDB.db = dbInstance.result;
     }

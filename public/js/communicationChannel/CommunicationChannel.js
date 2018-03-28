@@ -1,4 +1,4 @@
-self.importScripts(
+!!self.importScripts && self.importScripts(
   '/js/communicationChannel/BeaconChannel.js',
   '/js/communicationChannel/SocketChannel.js',
   '/js/communicationChannel/RequestChannel.js',
@@ -22,21 +22,21 @@ var CommunicationChannel = function() {
   var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   var serverUrl = isMobile ? SOCKET_SERVER_REGIONS.MOBILE : SOCKET_SERVER_REGIONS.LOCAL;
 
-
   return {
     init : function (config) {
       this.channel = Channels[config.channelMode];
 
+      if (config.channelMode === CHANNEL_MODES.BEACON && !Channels[config.channelMode].isSupported()) {
+        this.channel = Channels[CHANNEL_MODES.REQUEST];
+      }
       this.channel.init({
         url: serverUrl + config.dataCaptureUrl
       });
+
     },
 
-    send: function (eventType, data) {
-      var eventObject = Events.createEventObject(eventType, data);
-      var compressedData = ServerApi.buildDataString(eventObject);
-
-      this.channel.send(compressedData);
+    send: function (data) {
+      this.channel.send(data);
     }
   };
 }();
