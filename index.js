@@ -38,7 +38,7 @@ app.post('/analytics', function(req, res) {
   var decoded = decodeURIComponent(req.body);
   var decompressed = lzString.decompressFromBase64(decoded);
 
-  pushToStorage(decompressed);
+  pushToStorage(decompressed, 'post or beacon');
 
   res.status(200).send(decompressed);
 });
@@ -51,7 +51,7 @@ app.get('/analytics/:name', function(req, res) {
   var decoded = decodeURIComponent(req.query.x);
   var decompressed = lzString.decompressFromBase64(decoded);
 
-  pushToStorage(decompressed);
+  pushToStorage(decompressed, 'pixel');
   
   res.status(204).send();
 });

@@ -2,8 +2,8 @@ var BeaconChannel = function() {
   var serverUrl = '';
 
   return {
-    init: function (url) {
-      serverUrl = url;
+    init: function (config) {
+      serverUrl = config.url;
     },
 
     isSupported: function () {
@@ -12,7 +12,7 @@ var BeaconChannel = function() {
 
     send: function (data) {
       console.log('send from beacon');
-      
+
       //ToDo if false create a workaround
       //ToDo needs to be tested
       var beaconSuccess = navigator.sendBeacon(serverUrl, data);

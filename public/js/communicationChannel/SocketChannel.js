@@ -10,8 +10,8 @@ var SocketChannel = function() {
   };
 
   return {
-    init : function (serverUrl) {
-      socket = io(serverUrl);
+    init : function (config) {
+      socket = io(config.url);
     },
     send: function (data) {
       console.log('Send from socket');

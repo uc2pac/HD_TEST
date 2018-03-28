@@ -2,8 +2,8 @@ var AjaxChannel = function () {
   var serverUrl;
 
   return {
-    init: function (url) {
-      serverUrl = url;
+    init: function (config) {
+      serverUrl = config.url;
     },
 
     send: function (data) {

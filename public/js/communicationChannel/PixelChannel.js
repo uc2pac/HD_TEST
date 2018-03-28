@@ -6,8 +6,8 @@ var PixelChannel = function() {
     serverUrl;
 
   return {
-    init: function (url) {
-      serverUrl = url;
+    init: function (config) {
+      serverUrl = config.url;
     },
 
     createPixelUrl : function createPixelUrl(compressedData) {
