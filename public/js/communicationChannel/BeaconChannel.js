@@ -3,7 +3,7 @@ var BeaconChannel = function() {
 
   return {
     init: function (config) {
-      serverUrl = config.url;
+      serverUrl = config.url + config.dataCaptureUrl;
     },
 
     isSupported: function () {
