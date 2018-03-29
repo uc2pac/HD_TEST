@@ -25,6 +25,10 @@ var CommunicationChannel = function() {
   return {
     init : function (config) {
       this.channel = Channels[config.channelMode];
+      
+      if (config.channelMode === CHANNEL_MODES.BEACON && !Channels[config.channelMode].isSupported()) {
+        this.channel = Channels[CHANNEL_MODES.REQUEST];
+      }
 
       if (config.channelMode === CHANNEL_MODES.BEACON && !Channels[config.channelMode].isSupported()) {
         this.channel = Channels[CHANNEL_MODES.REQUEST];

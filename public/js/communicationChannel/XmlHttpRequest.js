@@ -1,5 +1,5 @@
 function XMLRequest() {
-  this.ie = isIeFlag;
+  this.ie = !-[ 1 ];
   this.NativeXMLRequest = this.ie ? new XDomainRequest() : new XMLHttpRequest();
   try {
     this.NativeXMLRequest.status;

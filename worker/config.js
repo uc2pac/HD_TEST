@@ -6,7 +6,7 @@ var StorageConfig = {
 
 var CommunicationChannel = {
   dataCaptureUrl: '/analytics',
-  channelMode: CHANNEL_MODES.REQUEST
+  //channelMode: CHANNEL_MODES.REQUEST
 };
 
 var CONFIG = {
