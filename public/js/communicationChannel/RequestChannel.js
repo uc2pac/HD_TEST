@@ -6,8 +6,9 @@
 var RequestChannel = function () {
   return {
     init: function (config) {
-      PixelChannel.init(config.url);
-      AjaxChannel.init(config.url);
+      var url = config.url + config.dataCaptureUrl;
+      PixelChannel.init(url);
+      AjaxChannel.init(url);
     },
 
     send: function (data) {

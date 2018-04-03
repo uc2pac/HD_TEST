@@ -34,7 +34,8 @@ var CommunicationChannel = function() {
         this.channel = Channels[CHANNEL_MODES.REQUEST];
       }
       this.channel.init({
-        url: serverUrl + config.dataCaptureUrl
+        url: serverUrl,
+        dataCaptureUrl: config.dataCaptureUrl
       });
 
     },
