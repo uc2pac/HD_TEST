@@ -1,7 +1,7 @@
 var IndexedDBConnector = (function IndexedDBConnector() {
   var DB;
 
-  return {
+  var IndexedDB = {
     init: function init(config) {
       this.config = config;
 
@@ -24,7 +24,17 @@ var IndexedDBConnector = (function IndexedDBConnector() {
     },
 
     initiateTransaction: function initiateTransaction() {
-      return DB.transaction([this.config.indexedDBStoreName], "readwrite");
+      var transaction =  DB.transaction([this.config.indexedDBStoreName], "readwrite");
+
+      transaction.onerror = function(error) {
+        console.log(error);
+      };
+
+      transaction.onabort = function(error) {
+        console.log(error);
+      };
+
+      return transaction;
     },
 
     getStore: function getStore() {
@@ -38,29 +48,32 @@ var IndexedDBConnector = (function IndexedDBConnector() {
       var guid = data.pageViewId;
       var event = data.event;
 
-      var openCursorRequest = store.openCursor(guid);
+      return new Promise(function(resolve, reject) {
+        var openCursorRequest = store.openCursor(guid);
       
-      openCursorRequest.onsuccess = function(e) {
-        var cursor = this.result;
-        var request;
+        openCursorRequest.onsuccess = function(e) {
+          var cursor = this.result;
+          var request, compressedData;
 
-        if (cursor) {
-          var events = cursor.value[guid];
-          events.push(event);
+          if (cursor) {
+            var events = IndexedDB.uncompressData(cursor.value);
+            events.push(event);
+            events = IndexedDB.compressData(events);
 
-          request = cursor.update({ [guid]: events });
-        } else {
-          request = store.add({ [guid]: [event] }, guid);
-        }
+            request = cursor.update(events);
+          } else {
+            compressData = IndexedDB.compressData([event]);
+            request = store.add(compressData, guid);
+          }
 
-        request.onsuccess = function(e) {
-          console.log(this.result);
+          request.onsuccess = resolve;
+          request.onerror = reject;
         };
 
-        request.onerror = function(e) {
+        openCursorRequest.onerror = function(e) {
           console.log(e);
-        }
-      };
+        };
+      });
     },
 
     count: function() {
@@ -69,8 +82,70 @@ var IndexedDBConnector = (function IndexedDBConnector() {
     },
     
     getAll: function getAll() {
-      var store = this.getStore();
-      return store.getAll();
+      return new Promise(IndexedDB._getOneByOne);
+    },
+
+    _getAll(resolve, reject) {
+      var store = IndexedDB.getStore();
+      var getAllRequest = store.getAll();
+
+      getAllRequest.onsuccess = function() {
+        var buffers = this.result.map(function(buffer) {
+          return IndexedDB.uncompressData(buffer);
+        });
+
+        resolve(buffers);
+      };
+
+      getAllRequest.onerror = function() {
+        reject();
+      };
+    },
+
+    _getOneByOne: function(resolve, reject) {
+      var store = IndexedDB.getStore();
+      var result = {};
+
+      store.openCursor().onsuccess = function (event) {
+        var cursor, e, target;
+
+        cursor = event.target.result;
+
+        if (cursor) {
+            result[cursor.key] = cursor.value;
+            cursor.continue();
+        } else {
+            resolve(result);
+            // if (typeof request.onsuccess === "function") {
+            //     e = new Event("success");
+            //     e.target = {
+            //         readyState: "done",
+            //         result: result
+            //     };
+            //     request.onsuccess(e);
+            // }
+        }
+      };
+    },
+
+    compressData: function compressData(data) {
+      var jsonString = JSON.stringify(data);
+      var compressed = LZString.compressToBase64(jsonString);
+      var encoded = encodeURIComponent(compressed);
+      return encoded;
+    },
+
+    uncompressData: function uncompressData(encoded) {
+      var decoded = decodeURIComponent(encoded);
+      var uncompressed = LZString.decompressFromBase64(decoded);
+
+      try { 
+        return JSON.parse(uncompressed);
+      } catch(err) {
+        return {};
+      }
     }
   }
+
+  return IndexedDB;
 })();

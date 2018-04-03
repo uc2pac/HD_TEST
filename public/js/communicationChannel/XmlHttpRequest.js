@@ -41,6 +41,8 @@ XMLRequest.prototype.setRequestHeader = function setRequestHeader() {
 
 XMLRequest.prototype.send = function send(data) {
   try {
+    console.timeEnd('load start');
+    console.timeEnd('click event');
     this.NativeXMLRequest.send(data);
   } catch (e) {
     console.log(e);

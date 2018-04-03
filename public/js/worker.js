@@ -1,8 +1,8 @@
 self.importScripts(
-  // '/constants/eventTypes.js',
-  // '/constants/communicationChannelModes.js',
-  // '/worker/Utility.js',
-  // '/worker/LzString.js', 
+  '/constants/eventTypes.js',
+  '/constants/communicationChannelModes.js',
+  '/worker/Utility.js',
+  '/worker/LzString.js', 
   '/worker/config.js', 
   '/js/IndexedDB.js'
 );
@@ -21,6 +21,10 @@ onmessage = function(e) {
       self.onEventAdd(data);
       break;
     }
+
+    case 'COUNT_DB': {
+      self.onBufferCount();
+    }
   }
 }
 
@@ -28,17 +32,30 @@ onmessage = function(e) {
 self.onConnect = function() {
   var isConnected = IndexedDBConnector.init(CONFIG.STORAGE);
 
-  console.time('indexedDB init');
   isConnected.then(function() {
-    console.timeEnd('indexedDB init');
-    postMessage({
-      topic: 'connectWorker'
-    });
+    postMessage({ topic: 'connectWorker' });
   });
 }
 
 // On add or update event
 self.onEventAdd = function(data) {
-  // data.event.data.html = Utility.compress(data.event.data.html);
-  // IndexedDBConnector.add(data);
+  data.event.data.html = Utility.compress(data.event.data.html);
+  
+  IndexedDBConnector.add(data)
+    .then(function() {
+      postMessage({ topic: 'ADD_EVENT' });
+    }).catch(function(error) {
+      postMessage({ topic: 'ERROR', err: error });
+    });
+}
+
+self.onBufferCount = function() {
+  var countRequest = IndexedDBConnector.count();
+
+  countRequest.onsuccess = function() {
+    postMessage({
+      topic: 'COUNT_DB',
+      payload: this.result
+    });
+  };
 }

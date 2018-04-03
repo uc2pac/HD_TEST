@@ -17,7 +17,6 @@ var RequestChannel = function () {
       //   AjaxChannel.send(data);
       // }
 
-      console.log('Send from ajax');
       AjaxChannel.send(data);
     }
   };

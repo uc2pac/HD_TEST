@@ -4,42 +4,50 @@ var WorkerConnector = function WorkerConnector() {
   var publicApi = {};
   var privateMethods = {};
   var worker;
+  var resolves = {};
+  var rejects = {};
   
   publicApi.connect = function connect() {
-    console.time('start OnLoad');
       worker = new Worker('/js/worker.js');
-      worker.postMessage(['connectWorker']);
-      console.time('worker connection');
-      return new Promise(function(resolve, reject) {
-        publicApi.listen(function(data) {
-          console.timeEnd('worker connection');
-          if (data.topic === 'connectWorker') {
-            resolve();
-          }
-        });
-      });
-      // publicApi.push('connectWorker', {
-      //     userToken: Session.getUserToken(),
-      //     sessionToken: Session.getSessionToken(),
-      //     globals: Client.getGlobals()
-      // });
+      worker.onmessage = privateMethods.handleMessage;
+
+      return privateMethods.push('connectWorker');
   };
 
-  publicApi.sendEvent = function sendEvent(guid, event) {
-    publicApi.push('ADD_EVENT', {
+  publicApi.addEvent = function addEvent(guid, event) {
+    return privateMethods.push('ADD_EVENT', {
       pageViewId: guid,
       event: event
     });
   };
 
-  publicApi.push = function push(topic, data) {
-      worker.postMessage([topic, data]);
+  publicApi.count = function count() {
+    return privateMethods.push('COUNT_DB');
   };
 
-  publicApi.listen = function listen(callback) {
-      worker.onmessage = function(e) {
-          callback(e.data);
-      };
+  privateMethods.handleMessage = function handleMessage(msg) {
+    const {topic, err, payload} = msg.data;
+
+    if (err) {
+      const reject = rejects[topic];
+      reject && reject(err);
+    } else {
+      const resolve = resolves[topic];
+      resolve && resolve(payload);
+    }
+    
+    // purge used callbacks
+    delete resolves[topic];
+    delete rejects[topic];
+  };
+
+  privateMethods.push = function push(topic, data) {
+    return new Promise(function(resolve, reject) {
+      resolves[topic] = resolve;
+      rejects[topic] = reject;
+
+      worker.postMessage([topic, data]);
+    });
   };
 
   return publicApi;
