@@ -53,17 +53,14 @@ var IndexedDBConnector = (function IndexedDBConnector() {
       
         openCursorRequest.onsuccess = function(e) {
           var cursor = this.result;
-          var request, compressedData;
+          var request;
 
           if (cursor) {
-            var events = IndexedDB.uncompressData(cursor.value);
+            var events = cursor.value;
             events.push(event);
-            events = IndexedDB.compressData(events);
-
             request = cursor.update(events);
           } else {
-            compressData = IndexedDB.compressData([event]);
-            request = store.add(compressData, guid);
+            request = store.add([event], guid);
           }
 
           request.onsuccess = resolve;
@@ -77,29 +74,19 @@ var IndexedDBConnector = (function IndexedDBConnector() {
     },
 
     count: function() {
-      var store = this.getStore();
-      return store.count();
+      // var store = this.getStore();
+      // return store.count();
+
+      return this.getAll().then(function(records) {
+        return new Promise(function(resolve) {
+          var size = Object.values(records).reduce((prev, next) => prev + next.length, 0);
+          resolve(size);
+        });
+      });
     },
     
     getAll: function getAll() {
       return new Promise(IndexedDB._getOneByOne);
-    },
-
-    _getAll(resolve, reject) {
-      var store = IndexedDB.getStore();
-      var getAllRequest = store.getAll();
-
-      getAllRequest.onsuccess = function() {
-        var buffers = this.result.map(function(buffer) {
-          return IndexedDB.uncompressData(buffer);
-        });
-
-        resolve(buffers);
-      };
-
-      getAllRequest.onerror = function() {
-        reject();
-      };
     },
 
     _getOneByOne: function(resolve, reject) {
@@ -128,23 +115,40 @@ var IndexedDBConnector = (function IndexedDBConnector() {
       };
     },
 
-    compressData: function compressData(data) {
-      var jsonString = JSON.stringify(data);
-      var compressed = LZString.compressToBase64(jsonString);
-      var encoded = encodeURIComponent(compressed);
-      return encoded;
-    },
+    // _getAll(resolve, reject) {
+    //   var store = IndexedDB.getStore();
+    //   var getAllRequest = store.getAll();
 
-    uncompressData: function uncompressData(encoded) {
-      var decoded = decodeURIComponent(encoded);
-      var uncompressed = LZString.decompressFromBase64(decoded);
+    //   getAllRequest.onsuccess = function() {
+    //     var buffers = this.result.map(function(buffer) {
+    //       return IndexedDB.uncompressData(buffer);
+    //     });
 
-      try { 
-        return JSON.parse(uncompressed);
-      } catch(err) {
-        return {};
-      }
-    }
+    //     resolve(buffers);
+    //   };
+
+    //   getAllRequest.onerror = function() {
+    //     reject();
+    //   };
+    // },
+
+    // compressData: function compressData(data) {
+    //   var jsonString = JSON.stringify(data);
+    //   var compressed = LZString.compressToBase64(jsonString);
+    //   var encoded = encodeURIComponent(compressed);
+    //   return encoded;
+    // },
+
+    // uncompressData: function uncompressData(encoded) {
+    //   var decoded = decodeURIComponent(encoded);
+    //   var uncompressed = LZString.decompressFromBase64(decoded);
+
+    //   try { 
+    //     return JSON.parse(uncompressed);
+    //   } catch(err) {
+    //     return {};
+    //   }
+    // }
   }
 
   return IndexedDB;

@@ -22,7 +22,7 @@ var WorkerConnector = function WorkerConnector() {
   };
 
   publicApi.count = function count() {
-    return privateMethods.push('COUNT_DB');
+    return privateMethods.push('COUNT_EVENTS');
   };
 
   privateMethods.handleMessage = function handleMessage(msg) {

@@ -22,8 +22,8 @@ onmessage = function(e) {
       break;
     }
 
-    case 'COUNT_DB': {
-      self.onBufferCount();
+    case 'COUNT_EVENTS': {
+      self.onEventsCount();
     }
   }
 }
@@ -41,21 +41,21 @@ self.onConnect = function() {
 self.onEventAdd = function(data) {
   data.event.data.html = Utility.compress(data.event.data.html);
   
-  IndexedDBConnector.add(data)
-    .then(function() {
-      postMessage({ topic: 'ADD_EVENT' });
-    }).catch(function(error) {
-      postMessage({ topic: 'ERROR', err: error });
-    });
+  IndexedDBConnector.add(data).then(function() {
+    postMessage({ topic: 'ADD_EVENT' });
+  }).catch(self.handleError);
 }
 
-self.onBufferCount = function() {
-  var countRequest = IndexedDBConnector.count();
-
-  countRequest.onsuccess = function() {
+// Count events in all existing buffers
+self.onEventsCount = function() {
+  IndexedDBConnector.count().then(function(size) {
     postMessage({
-      topic: 'COUNT_DB',
-      payload: this.result
+      topic: 'COUNT_EVENTS',
+      payload: size
     });
-  };
+  }).catch(self.handleError);
+}
+
+self.handleError = function(error) {
+  postMessage({ topic: 'ERROR', err: error || 'Unexpected error has happened' });
 }
