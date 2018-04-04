@@ -4,7 +4,7 @@ self.importScripts(
   '/worker/Utility.js',
   '/worker/LzString.js', 
   '/worker/config.js', 
-  '/js/IndexedDB.js'
+  '/js/IndexedDBConnector.js'
 );
 
 onmessage = function(e) {
@@ -25,6 +25,10 @@ onmessage = function(e) {
     case 'COUNT_EVENTS': {
       self.onEventsCount();
     }
+
+    case 'GET_EVENTS': {
+      self.getEvents();
+    }
   }
 }
 
@@ -41,7 +45,7 @@ self.onConnect = function() {
 self.onEventAdd = function(data) {
   data.event.data.html = Utility.compress(data.event.data.html);
   
-  IndexedDBConnector.add(data).then(function() {
+  IndexedDBConnector.insert(data).then(function() {
     postMessage({ topic: 'ADD_EVENT' });
   }).catch(self.handleError);
 }
@@ -56,6 +60,44 @@ self.onEventsCount = function() {
   }).catch(self.handleError);
 }
 
+// Get all events from store
+self.getEvents = function getEvents() {
+  IndexedDBConnector.getAll().then(function(result) {
+    console.time('compressedData');
+    var compressedData = self.compressData(result);
+    console.timeEnd('compressedData');
+
+    self.postMessage({
+      topic: 'GET_EVENTS',
+      payload: compressedData
+    });
+  });
+}
+
 self.handleError = function(error) {
   postMessage({ topic: 'ERROR', err: error || 'Unexpected error has happened' });
 }
+
+
+/************
+ * Helpers
+ ************/
+self.createDataPacket = function(eventObject) {
+  return Object.keys(eventObject).map(function createPacket(key) {
+    return {
+        // TODO: think how to pass session data to worker
+        // userId: Session.getUserToken(),
+        // sessionId: Session.getSessionToken(),
+        pageviewId: key,
+        events: eventObject[key]
+    };
+  });
+}
+
+self.compressData = function compressData(data) {
+  var dataPacket = self.createDataPacket(data);
+  var jsonString = JSON.stringify(dataPacket);
+  var compressed = LZString.compressToBase64(jsonString);
+  var encoded = encodeURIComponent(compressed);
+  return encoded;
+};

@@ -21,6 +21,10 @@ var WorkerConnector = function WorkerConnector() {
     });
   };
 
+  publicApi.getAllEvents = function() {
+    return privateMethods.push('GET_EVENTS');
+  }
+
   publicApi.count = function count() {
     return privateMethods.push('COUNT_EVENTS');
   };

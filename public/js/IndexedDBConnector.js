@@ -42,41 +42,61 @@ var IndexedDBConnector = (function IndexedDBConnector() {
       return transaction.objectStore(this.config.indexedDBStoreName);
     },
 
-    add: function add(data) {
+    openCursor: function openCursor(key) {
       var store = this.getStore();
 
+      return new Promise(function(resolve, reject) {
+        var openCursorRequest = store.openCursor(key);
+
+        openCursorRequest.onsuccess = function(e) {
+          resolve({
+            cursor: e.target.result,
+            store
+          });
+        };
+
+        openCursorRequest.onerror = reject;
+      });
+    },
+
+    insert: function insert(data) {
       var guid = data.pageViewId;
       var event = data.event;
 
+      return this.openCursor(guid).then(({cursor, store}) => {
+        if (cursor) {
+          var events = cursor.value;
+          events.push(event);
+          return this.update(cursor, events);
+        }
+        
+        return this.add([event], guid, store);
+      }).catch(function(error) {
+        console.log(error);
+      });
+    },
+
+    add: function add(data, key, store) {
+      var store = store || this.getStore();
+
       return new Promise(function(resolve, reject) {
-        var openCursorRequest = store.openCursor(guid);
-      
-        openCursorRequest.onsuccess = function(e) {
-          var cursor = this.result;
-          var request;
+        var request = store.add(data, key);
 
-          if (cursor) {
-            var events = cursor.value;
-            events.push(event);
-            request = cursor.update(events);
-          } else {
-            request = store.add([event], guid);
-          }
+        request.onsuccess = resolve;
+        request.onerror = reject;
+      });
+    },  
 
-          request.onsuccess = resolve;
-          request.onerror = reject;
-        };
+    update: function update(cursor, data) {
+      return new Promise(function(resolve, reject) {
+        var request = cursor.update(data);
 
-        openCursorRequest.onerror = function(e) {
-          console.log(e);
-        };
+        request.onsuccess = resolve;
+        request.onerror = reject;
       });
     },
 
     count: function() {
-      // var store = this.getStore();
-      // return store.count();
-
       return this.getAll().then(function(records) {
         return new Promise(function(resolve) {
           var size = Object.values(records).reduce((prev, next) => prev + next.length, 0);
@@ -115,23 +135,6 @@ var IndexedDBConnector = (function IndexedDBConnector() {
       };
     },
 
-    // _getAll(resolve, reject) {
-    //   var store = IndexedDB.getStore();
-    //   var getAllRequest = store.getAll();
-
-    //   getAllRequest.onsuccess = function() {
-    //     var buffers = this.result.map(function(buffer) {
-    //       return IndexedDB.uncompressData(buffer);
-    //     });
-
-    //     resolve(buffers);
-    //   };
-
-    //   getAllRequest.onerror = function() {
-    //     reject();
-    //   };
-    // },
-
     // compressData: function compressData(data) {
     //   var jsonString = JSON.stringify(data);
     //   var compressed = LZString.compressToBase64(jsonString);
@@ -148,7 +151,7 @@ var IndexedDBConnector = (function IndexedDBConnector() {
     //   } catch(err) {
     //     return {};
     //   }
-    // }
+    // 
   }
 
   return IndexedDB;
