@@ -1,3 +1,3 @@
-const version = require('package.json').version;
+const version = require('./package.json').version;
 
 console.log(version);
