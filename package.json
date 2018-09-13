@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "inspect": "node --inspect index.js",
-    "preversion": "node test.js",
-    "version": "node test.js"
+    "build": "node test.js",
+    "version": "npm run build && git add -A dist"
   },
   "repository": {
     "type": "git",
